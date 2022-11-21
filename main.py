@@ -17,30 +17,30 @@ black = (0,0,0)
 gameRows = 6
 gameColumns = 2
 clock = pygame.time.Clock()
-frameRate = 30
-myBall = False
+fps = 30
 gameOver = 0
 score = 0
+text_col=234,0,6
+
+#Fuction for displaying text on window 
+def draw_text(text, font, text_col, x,y):
+    img = font.render(text, True, text_col)
+    window.blit(img, (x, y))
+
 class Ball():
     def __init__(self, x, y):
-        self.radius = 10
-        self.x = x - self.radius
-        self.y = y - 50
-        self.rect = pygame.Rect(self.x, self.y, self.radius*2, self.radius*2)
-        self.xSpeed = 1
-        self.ySpeed = -1
-        self.maxSpeed = 5
-        self.gameOver = 0
+        self.reset(x,y)
 
-    def motion(self):
+    def motion(self,score,wall,userBasepad):
         collisionThreshold = 5
-        blockObject = brick.bricks
-        brickDestroyed = 1
+        blockObject = wall.bricks
+        wallDestroyed = 1
         countRow = 0
         for row in blockObject:
             countItem = 0
             for item in row:
                 if self.rect.colliderect(item[0] ):
+                    score+=5
                     if abs(self.rect.bottom - item[0].top) < collisionThreshold and self.ySpeed >0 :
                         self.ySpeed *= -1
                     if abs(self.rect.top - item[0].bottom) < collisionThreshold and self.ySpeed < 0:
@@ -53,16 +53,16 @@ class Ball():
                         blockObject[countRow][countItem] [1] -= 1
                     else:
                         blockObject[countRow][countItem] [0] = (0, 0, 0, 0)
-
+                # check if brick destroyed
                 if blockObject [countRow][countItem] [0] != (0,0,0,0):
-                    brickDestroyed = 0
+                    wallDestroyed=0
                 countItem +=1
             countRow +=1
 
-        if brickDestroyed ==1:
+        if wallDestroyed ==1:
             self.gameOver = 1
 
-        # check for collision with bricks
+        # check for collision with window border
         if self.rect.left <0 or self.rect.right > windowWidth:
             self.xSpeed *= -1
         if self.rect.top < 0 :
@@ -79,8 +79,8 @@ class Ball():
                     self.xSpeed = self.maxSpeed
                 elif self.xSpeed <0 and self.xSpeed <- self.maxSpeed:
                     self.xSpeed = -self.maxSpeed
-                else:
-                    self.xSpeed *= -1
+                # else:
+                #    self.xSpeed *= -1
 
         self.rect.x += self.xSpeed
         self.rect.y += self.ySpeed
@@ -101,7 +101,8 @@ class Ball():
         self.ySpeed = -4
         self.maxSpeed = 5
         self.gameOver = 0
-
+        score=0
+        myBall=False 
 
     #   to create bricks
 class Block:
@@ -166,25 +167,57 @@ class Base():
             self.x += self.speed
             self.direction = 1
 
-brick= Block()
-brick.makeBrick()
-brick.drawBrick()
-
-userBasepad= Base()
-ball= Ball(windowWidth/2,windowHeight)
-
-while True:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT: sys.exit()
+    def drawBase(self):
+        pygame.draw.rect(window,(0,200,0),self.rect)
     
-    # screen.fill(black)
-    # screen.blit(ball, ballrect)
+def main():
+    wall= Block()
+    wall.makeBrick()
+    myBall =False 
+    userBasepad= Base()
+    ball= Ball(windowWidth/2,windowHeight)
+
+    while True:
+        clock.tick(fps)
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT: sys.exit()
     
-    userBasepad.slide()
+        window.fill(black)
+        #window.blit(ball, ballrect)
+        userBasepad.drawBase()
+        wall.drawBrick()
+        ball.draw()
+        if myBall:
+            userBasepad.slide()    
+            gameOver =  ball.motion(score,wall,userBasepad)
+            if gameOver != 0:
+                myBall = False
+            
+ 
+    #Print player instructions
+        if not myBall:
+            if gameOver == 0:
+                draw_text('CLICK ANYWHERE TO START', font , text_col, 100, windowHeight // 2 + 100)
+            elif gameOver == 1:
+                draw_text('YOU WON', font , text_col, 240, windowHeight // 2 + 50)
+                draw_text('CLICK ANYWHERE TO START', font , text_col, 100, windowHeight // 2 + 100)   
+            elif gameOver == -1:
+                draw_text('YOU LOST', font , text_col, 240, windowHeight // 2 + 50)
+                draw_text('CLICK ANYWHERE TO START', font , text_col, 100, windowHeight // 2 + 100)   
+            
+    
+        for event in pygame.event.get():
+            if event.type == pygame.MOUSEBUTTONDOWN and myBall == False:
+                myBall = True
+                ball.reset(userBasepad.x + (userBasepad.width//2), userBasepad.y - userBasepad.height)
+                userBasepad.drawBase()
+                wall.makeBrick()
+        
+        draw_text(f"{score}", font , text_col, 50 , windowHeight - 50)        
+        pygame.display.update()
+    pygame.quit()
 
-    ball.draw()
-    ball.motion()
-
-    pygame.display.flip()
+if __name__ =='__main__':
+    main()
 
 
