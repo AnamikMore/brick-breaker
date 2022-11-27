@@ -36,7 +36,7 @@ class Ball():
         self.maxSpeed = 5
         self.gameOver = 0
         self.score=0
-        # self.myBall=False 
+        self.myBall=False 
 
 
     def motion(self,score,wall,userBasepad):
@@ -145,7 +145,7 @@ class Base():
 
     def __init__(self):
         self.height = 20
-        self.width = int( windowWidth/6 )
+        self.width = int( windowWidth/gameColumns )
         self.x = int(windowWidth/2 - self.width/2)
         self.y = windowHeight - self.height*2
         self.speed = 20
@@ -192,16 +192,16 @@ def main():
     #Print player instructions
         if not ball.myBall:
             if ball.gameOver == 0:
-                draw_text('press 5 to START', font , text_col, 100, windowHeight // 2 + 100)
+                draw_text(' START', font , text_col, 100, windowHeight // 2 + 100)
             elif ball.gameOver == 1:
                 draw_text('YOU WON', font , text_col, 240, windowHeight // 2 + 50)
-                draw_text('press 5 to START', font , text_col, 100, windowHeight // 2 + 100)   
+                draw_text(' START', font , text_col, 100, windowHeight // 2 + 100)   
             elif ball.gameOver == -1:
                 draw_text('YOU LOST', font , text_col, 240, windowHeight // 2 + 50)
-                draw_text('press 5 to START', font , text_col, 100, windowHeight // 2 + 100)   
+                draw_text(' START', font , text_col, 100, windowHeight // 2 + 100)   
             
             keys = pygame.key.get_pressed()
-            if keys[pygame.K_5]:
+        if keys[pygame.K_LEFT]:
                 ball.myBall = True
                 ball.reset(userBasepad.x + (userBasepad.width//2), userBasepad.y - userBasepad.height)
                 userBasepad.drawBase()
